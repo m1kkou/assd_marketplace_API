@@ -5,7 +5,6 @@ const { validationResult } = require('express-validator/check');
 
 const Posting = require('../models/posting');
 const User = require('../models/user');
-const { createBrotliCompress } = require('zlib');
 
 exports.getPostings = (req, res, next) => {
     const categoryFilter = req.query.category || "";
@@ -23,7 +22,7 @@ exports.getPostings = (req, res, next) => {
             filteredPostings.push(postings.filter(p => p.location.city == locationFilter));
         }
         if (filteredPostings.length == 0){
-            filteredPostings = postings;
+            filteredPostings.push([...postings]);
         }
         console.log(postings);
         res

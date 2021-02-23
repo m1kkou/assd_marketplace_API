@@ -10,7 +10,7 @@ module.exports = (req, res, next) => {
     const token = headerToken.split(' ')[1];
     let decodedToken;
     try {
-        decodedToken = jwt.verify(token, 'IDDQD_activated');
+        decodedToken = jwt.verify(token, process.env.JWT_KEY);
     } catch (err) {
         err.statusCode = 500;
         throw err;

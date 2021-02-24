@@ -11,10 +11,6 @@ const userSchema = new Schema({
     name: {
         type: String
     },
-    status: {
-        type:String,
-        default: 'Newbie'
-    },
     postings: [{
             type: Schema.Types.ObjectId,
             ref: 'Posting'

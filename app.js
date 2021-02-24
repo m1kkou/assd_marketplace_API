@@ -3,59 +3,23 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const multer = require('multer');
-const cloudinary = require('cloudinary');
-const { CloudinaryStorage } = require('multer-storage-cloudinary');
-require('dotenv').config();
+const cors = require('cors');
 
 const app = express();
 
+// const jsonParser = bodyParser.json();
+// const urlencodedParser = bodyParser.urlencoded({ extended: false})
 
-const storage = new CloudinaryStorage({
-    cloudinary: cloudinary,
-    folder: '',
-    allowedFormats: ['jpg', 'jpeg', 'png'],
-});
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true}));
 
-
-//const parser = multer({ storage: storage });
-
-// const fileStorage = multer.diskStorage({
-//     destination: (req, file, cb) => {
-//         cb(null, 'images');
-//     },
-//     filename: (req, file, cb) => {
-//         cb(null, file.originalname);
-//         console.log(file);
-//     }
-// });
-
-const fileFilter = (req, file, cb) => {
-    if (
-        file.mimetype === 'image/png' ||
-        file.mimetype === 'image/jpg' ||
-        file.mimetype === 'image/jpeg'
-    ) {
-        cb(null, true);
-    } else {
-        cb(null, false);
-    }
-};
+app.use(cors())
+require('dotenv').config();
 
 const postingsRoutes = require('./routes/postings');
 const authRoutes = require('./routes/auth');
 
-app.get('/', (req, res, next) => {
-    console.log(req.body);
-    next();
-})
-app.use(bodyParser.json());
-app.use(multer({ storage: storage, fileFilter: fileFilter }).single('image'));
-// app.use('/images', parser.single('image'), function (req,res) {
-//     res.json(req.file)
-// });
 
-//app.use('/images', express.static(path.join(__dirname, 'images')));
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -64,7 +28,10 @@ app.use((req, res, next) => {
     next();
 });
 
-
+app.post('/', (req, res ,next) => {
+    console.log(`\nREQUEST BODY:\n${req.body.email}\t${req.body.password}\n\n`);
+    next();
+})
 
 app.use(postingsRoutes);
 

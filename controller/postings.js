@@ -6,6 +6,7 @@ const { validationResult } = require('express-validator/check');
 const Posting = require('../models/posting');
 const User = require('../models/user');
 
+
 exports.getPostings = (req, res, next) => {
     const categoryFilter = req.query.category || "";
     const locationFilter = req.query.location || ""; 
@@ -57,11 +58,7 @@ exports.postPosting = (req, res, next) => {
         error.statusCode = 422;
         throw error;
     }
-    // if (!req.file){
-    //     const error = new Error('No image provided.');
-    //     error.statusCode = 422;
-    //     throw error;
-    // }
+    
     const title = req.body.title;
     const description = req.body.description;
     const category = req.body.category;
@@ -125,8 +122,11 @@ exports.getPosting = (req, res, next) => {
     })
 }
 exports.patchImageToPosting = (req, res, next) => {
+    console.log(req.file);
+    console.log(req.file.url);
+    console.log(req.file.public_id);
+    const imageUrl = req.file.url;
     const postingId = req.params.postingId;
-    const imageUrl = req.file.path;
     Posting.findById(postingId)
     .then(posting => {
         if(!posting){
@@ -143,6 +143,7 @@ exports.patchImageToPosting = (req, res, next) => {
         return posting.save();
     })
     .then(result => {
+        console.log(res.body);
         res.status(200).json({ message: 'Posting updated!', posting: result });
     })
     .catch(err => {

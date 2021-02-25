@@ -39,6 +39,7 @@ exports.signup = (req, res, next) => {
 exports.login = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
+    let loadedUser;
     User.findOne({ email: email })
         .then(user => {
             if(!user) {

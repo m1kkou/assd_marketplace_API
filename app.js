@@ -3,38 +3,70 @@ const path = require('path');
 const express = require('express');
 const bodyParser = require('body-parser');
 const mongoose = require('mongoose');
-const cors = require('cors');
-
-const app = express();
-
-// const jsonParser = bodyParser.json();
-// const urlencodedParser = bodyParser.urlencoded({ extended: false})
-
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true}));
-
-app.use(cors())
-require('dotenv').config();
+const multer = require('multer');
+const cloudinary = require('cloudinary');
+const cloudinaryStorage = require('multer-storage-cloudinary');
 
 const postingsRoutes = require('./routes/postings');
 const authRoutes = require('./routes/auth');
+const imageRoutes = require('./routes/images');
 
+
+const app = express();
+
+//app.use(bodyParser.urlencoded());
+app.use(bodyParser.json());
+
+require('dotenv').config();
+
+cloudinary.config({ 
+    cloud_name: process.env.CLOUD_NAME, 
+    api_key: process.env.CLOUD_KEY,
+    api_secret: process.env.CLOUD_SECRET
+});
+const storage = cloudinaryStorage({
+    cloudinary: cloudinary,
+    folder: 'images', // give cloudinary folder where you want to store images
+    allowedFormats: ['jpg', 'png', 'jpeg'],
+});
+
+const fileFilter = (req, file, cb) => {
+    if (
+        file.mimetype === 'image/png' ||
+        file.mimetype === 'image/jpg' ||
+        file.mimetype === 'image/jpeg'
+    ) {
+        cb(null, true);
+    } else {
+        cb(null, false);
+    }
+};
+//const parser = multer({ storage, fileFilter });
+
+
+
+app.use(
+    multer({ storage: storage, fileFilter: fileFilter }).single('image')
+  );
+// app.use(parser);
+// app.post(parser.single('image'));
 
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
-    res.setHeader('Access-Control-Allow-Methods', 'GET,POST,PUT,PATCH,DELETE');
+    res.setHeader(
+      'Access-Control-Allow-Methods',
+      'OPTIONS, GET, POST, PUT, PATCH, DELETE'
+    );
     res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization');
     next();
-});
+  });
 
-app.post('/', (req, res ,next) => {
-    console.log(`\nREQUEST BODY:\n${req.body.email}\t${req.body.password}\n\n`);
-    next();
-})
 
-app.use(postingsRoutes);
-
+//app.use(parser.single('image'), imageRoutes);
+//app.use('/images', express.static(path.join(__dirname, 'images')));
+//app.use('/images', imageRoutes);
+app.use('/postings', postingsRoutes);
 app.use('/auth', authRoutes);
 
 //Error handling:
@@ -45,8 +77,6 @@ app.use((error, req, res, next) => {
     const data = error.data;
     res.status(status).json({ message: message, data: data });
 });
-
-console.log(`Server running on port: ${process.env.PORT}`);
 
 mongoose
 .connect(

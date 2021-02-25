@@ -11,10 +11,12 @@ const userSchema = new Schema({
     name: {
         type: String
     },
-    postings: [{
+    postings: [
+        {
             type: Schema.Types.ObjectId,
             ref: 'Posting'
-    }]
+        }
+    ]
 });
 
 module.exports = mongoose.model('User', userSchema);

@@ -4,16 +4,16 @@ const Schema = mongoose.Schema;
 const postingSchema = new Schema(
     {
     title: {
-        type: String
-        //required: true
+        type: String,
+        required: true
     },
     description: {
-        type: String
-        //required: true
+        type: String,
+        required: true
     },
     category: {
-        type:String
-        //required: true
+        type:String,
+        required: true
     },
     location: {
         street: {type: String},
@@ -21,9 +21,10 @@ const postingSchema = new Schema(
         type: Object
         //required: true
     },
-    imageUrl: [
-        String
-    ],
+    images: [{
+        type: Schema.Types.ObjectId,
+        ref: 'Image'
+    }],
     askingPrice: {
         type: Number
         //required: true

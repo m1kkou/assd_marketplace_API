@@ -5,21 +5,22 @@ const { validationResult } = require('express-validator/check');
 
 const Posting = require('../models/posting');
 const User = require('../models/user');
+const Image = require('../models/images');
 
 
 exports.getPostings = (req, res, next) => {
-    const categoryFilter = req.query.category || "";
-    const locationFilter = req.query.location || ""; 
+    const categoryFilter = req.query.category;
+    const locationFilter = req.query.location; 
     //const dateFilter = req.query.date || ;
     
     Posting
     .find()
     .then(postings => {
         const filteredPostings = [];    
-        if (categoryFilter != ""){
+        if (categoryFilter){
             filteredPostings.push(postings.filter(p => p.category == categoryFilter));
         }
-        if (locationFilter != ""){
+        if (locationFilter){
             filteredPostings.push(postings.filter(p => p.location.city == locationFilter));
         }
         if (filteredPostings.length == 0){
@@ -126,8 +127,18 @@ exports.patchImageToPosting = (req, res, next) => {
     console.log(req.file.url);
     console.log(req.file.public_id);
     const imageUrl = req.file.url;
+    const cloudinaryPublicId = ref.file.public_id;
     const postingId = req.params.postingId;
-    Posting.findById(postingId)
+    let postingRef;
+    const image = new Image({
+        imageUrl: imageUrl,
+        cloudinaryPublicId: cloudinaryPublicId,
+        postingRef: req.postingId 
+    });
+    image
+    .save()
+    .then(result => {
+        return Posting.findById(postingId)})
     .then(posting => {
         if(!posting){
             const error = new Error('Could not find posting.');
@@ -152,7 +163,7 @@ exports.patchImageToPosting = (req, res, next) => {
         }
         next(err);
     });
-}
+    }
 
 exports.updatePosting = (req, res, next) => {
     const postingId = req.params.postingId;

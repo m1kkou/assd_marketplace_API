@@ -1,5 +1,3 @@
-const { validationResult } = require('express-validator/check');
-
 const Posting = require('../models/posting');
 const Image = require('../models/images');
 
@@ -22,11 +20,11 @@ const Image = require('../models/images');
 
 exports.postImage = (req, res, next) => {
     console.log(req.body);
-    if (!errors.isEmpty()){
-        const error = new Error('Validation failed, entered data incorrect.');
-        error.statusCode = 422;
-        throw error;
-    }
+    // if (!errors.isEmpty()){
+    //     const error = new Error('Validation failed, entered data incorrect.');
+    //     error.statusCode = 422;
+    //     throw error;
+    // }
     const imageUrl = req.file.url
     const image = new Image({
         image: imageUrl,

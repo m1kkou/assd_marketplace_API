@@ -1,12 +1,8 @@
 # ASSD-Marketplace-API
 
-This repo holds the API documentation for ASSD course marketplace-api.
+This repo holds the API documentation and source code for ASSD course marketplace-api.
 
 Porject repos:
-API documentation: 
-https://github.com/m1kkou/ASSD-Marketplace-API/tree/main
-
-server source code: 
 https://github.com/m1kkou/assd_marketplace_API
 
 

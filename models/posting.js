@@ -18,23 +18,22 @@ const postingSchema = new Schema(
     location: {
         street: {type: String},
         city: {type: String},
-        type: Object
-        //required: true
+        type: Object,
+        required: true
     },
     images: [{
         type: Schema.Types.ObjectId,
         ref: 'Image'
     }],
     askingPrice: {
-        type: Number
-        //required: true
+        type: Number,
+        required: true
     },
     deliveryType: {
-        1: {type: String, default: 'Hakemalla'},
-        2: {type: String, default: 'Heittämällä'},
-        //required: true
+        type: Number,
+        required: true
     },
-    seller: {
+    sellerId: {
         type: Schema.Types.ObjectId,
         ref: 'User',
         required: true

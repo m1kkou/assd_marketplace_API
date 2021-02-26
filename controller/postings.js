@@ -6,6 +6,7 @@ const { validationResult } = require('express-validator/check');
 const Posting = require('../models/posting');
 const User = require('../models/user');
 const Image = require('../models/images');
+const user = require('../models/user');
 
 
 exports.getPostings = (req, res, next) => {
@@ -36,20 +37,8 @@ exports.getPostings = (req, res, next) => {
             err.statusCode = 500;
         }
         next(err);
-    })
-    // Posting.find()
-    // .then(postings => {
-    //     res
-    //     .status(200)
-    //     .json({ message: 'Fetched postings succesfully', postings: postings});
-    // })
-    // .catch(err => {
-    //     if(!err.statusCode){
-    //         err.statusCode = 500;
-    //     }
-    //     next(err);
-    // });
-}
+    });
+};
 
 exports.postPosting = (req, res, next) => {
     const errors = validationResult(req);
@@ -73,10 +62,9 @@ exports.postPosting = (req, res, next) => {
         description: description, 
         category: category,
         location: location,
-        imageUrl: [],
         askingPrice: askingPrice,
         deliveryType: deliveryType,
-        seller: req.userId
+        sellerId: req.userId
     });
     posting
         .save()
@@ -106,14 +94,23 @@ exports.postPosting = (req, res, next) => {
 
 exports.getPosting = (req, res, next) => {
     const postingId = req.params.postingId;
+
     Posting.findById(postingId)
+    .populate('images', 'imageUrl')
     .then(posting => {
         if(!posting){
             const error = new Error('Could not find posting.');
             error.statusCode = 404;
             throw error;
         }
-        res.status(200).json({ message: 'Posting fetched.', posting: posting });
+        return posting
+    })
+    .then(posting => {
+        console.log([...posting.images])
+        res.status(200).json({ 
+            message: 'Posting fetched.', 
+            posting: posting
+        });
     })
     .catch(err => {
         if (!err.statusCode) {
@@ -121,35 +118,32 @@ exports.getPosting = (req, res, next) => {
         }
         next(err);
     })
-}
+};
+
 exports.patchImageToPosting = (req, res, next) => {
-    console.log(req.file);
-    console.log(req.file.url);
-    console.log(req.file.public_id);
     const imageUrl = req.file.url;
-    const cloudinaryPublicId = ref.file.public_id;
-    const postingId = req.params.postingId;
-    let postingRef;
+    const cloudinaryPublicId = req.file.public_id;
+
     const image = new Image({
         imageUrl: imageUrl,
-        cloudinaryPublicId: cloudinaryPublicId,
-        postingRef: req.postingId 
+        cloudinaryPublicId: cloudinaryPublicId
     });
     image
     .save()
     .then(result => {
-        return Posting.findById(postingId)})
+        return Posting.findById(req.params.postingId)})
     .then(posting => {
         if(!posting){
             const error = new Error('Could not find posting.');
             error.statusCode = 404;
             throw error;
         }
+        //console.log(length([...posting.images]))
         // if(posting.imageUrl.length > 3){
         //     res.json({ message: 'Maximum amount of pictures is three.'});
         //     return;
         //  }
-        posting.imageUrl.push(imageUrl);
+        posting.images.push(image);
         console.log(posting);
         return posting.save();
     })
@@ -167,23 +161,16 @@ exports.patchImageToPosting = (req, res, next) => {
 
 exports.updatePosting = (req, res, next) => {
     const postingId = req.params.postingId;
+    
     const title = req.body.title;
     const description = req.body.description;
     const category = req.body.category;
     const location = req.body.location;
-    const images = req.body.images;
     const askingPrice = req.body.askingPrice;
     const deliveryType = req.body.deliveryType;
+    
     if (!errors.isEmpty()){
         const error = new Error('Validation failed, entered data incorrect.');
-        error.statusCode = 422;
-        throw error;
-    }
-    if(req.file) {
-        images.imageUrl = req.file.path;
-    }
-    if(!imageUrl){
-        const error = new Error('No file picked.');
         error.statusCode = 422;
         throw error;
     }
@@ -194,19 +181,17 @@ exports.updatePosting = (req, res, next) => {
             error.statusCode = 404;
             throw error;
         }
-        if(post.seller.toString() !== req.userId) {
+        if(posting.seller.toString() !== req.userId) {
             const error = new Error('Not authorized!');
             error.statusCode = 403;
             throw error;
         }
-        if (imageUrl !== posting.images.imageUrl){
-            clearImage(posting.images.imageUrl)
-        }
+
         posting.title = title;
         posting.description = description;
         posting.category = category;
         posting.location = location;
-        posting.images = images;
+        posting.images = posting.images;
         posting.askingPrice = askingPrice;
         posting.deliveryType = deliveryType;
         return posting.save();
@@ -224,7 +209,7 @@ exports.updatePosting = (req, res, next) => {
 };
 
 exports.deletePosting = (req, res, next) => {
-    const postingId = req.param.postingId;
+    const postingId = req.params.postingId;
     Posting.findById(postingId)
     .then(posting => {
         if(!posting){
@@ -232,20 +217,25 @@ exports.deletePosting = (req, res, next) => {
             error.statusCode = 404;
             throw error;
         }
-        if(post.seller.toString() !== req.userId) {
+        if(posting.sellerId.toString() !== req.userId) {
             const error = new Error('Not authorized!');
             error.statusCode = 403;
             throw error;
         }
-        posting.imageUrl.forEach(imageUrl => clearImage(imageUrl));
+        console.log(postingId);
+        console.log(user.findById(req.userId));
         return Posting.findByIdAndRemove(postingId);
     })
     .then(result => {
-        User.findById(req.userId);
-    })
-    .then(user => {
-        user.postings.pull(postingId);
-        return user.save();
+        User.findById(req.userId)
+        .then(user => {
+            user.RemovePosting(postingId)
+        }).catch(err => {
+            if(!err.statusCode){
+            err.statusCode = 500;
+        }
+        next(err)
+        });
     })
     .then(result => {
         console.log(result);

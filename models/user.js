@@ -18,5 +18,13 @@ const userSchema = new Schema({
         }
     ]
 });
+userSchema.methods.RemovePosting = function(postingId){
+    console.log(postingId);
+    const updatedPostings = this.postings.filter(posting => {
+        return posting._id.toString() !== postingId.toString()
+    })
+    this.postings = updatedPostings;
+    return this.save();
+}
 
 module.exports = mongoose.model('User', userSchema);

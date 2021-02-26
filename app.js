@@ -9,12 +9,10 @@ const cloudinaryStorage = require('multer-storage-cloudinary');
 
 const postingsRoutes = require('./routes/postings');
 const authRoutes = require('./routes/auth');
-const imageRoutes = require('./routes/images');
 
 
 const app = express();
 
-//app.use(bodyParser.urlencoded());
 app.use(bodyParser.json());
 
 require('dotenv').config();
@@ -41,16 +39,10 @@ const fileFilter = (req, file, cb) => {
         cb(null, false);
     }
 };
-//const parser = multer({ storage, fileFilter });
-
-
 
 app.use(
     multer({ storage: storage, fileFilter: fileFilter }).single('image')
   );
-// app.use(parser);
-// app.post(parser.single('image'));
-
 
 app.use((req, res, next) => {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -62,10 +54,6 @@ app.use((req, res, next) => {
     next();
   });
 
-
-//app.use(parser.single('image'), imageRoutes);
-//app.use('/images', express.static(path.join(__dirname, 'images')));
-//app.use('/images', imageRoutes);
 app.use('/postings', postingsRoutes);
 app.use('/auth', authRoutes);
 

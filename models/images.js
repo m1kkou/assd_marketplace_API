@@ -10,11 +10,6 @@ const imageSchema = new Schema(
     cloudinaryPublicId: {
         type: String,
         required: true
-    },
-    postingRef: {
-        type: Schema.Types.ObjectId,
-        ref: 'Posting',
-        required: true
     }
 
 }, { timestamps: true}

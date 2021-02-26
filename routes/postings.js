@@ -1,13 +1,11 @@
 const express = require('express');
 const { body } = require('express-validator/check');
 
-
 const postingsController = require('../controller/postings');
-const imageController = require('../controller/images');
 const isAuth = require('../middleware/is-auth');
 
-
 const router = express.Router();
+
 
 //GET /postings
 
@@ -15,8 +13,8 @@ router.get('/', postingsController.getPostings);
 
 router.get('/:postingId', postingsController.getPosting);
 
-//Validaatiot - tänne vois lisätä
-//POST /postings/:postingId
+//POST - create a new product
+
 router.post('/', 
     isAuth, 
     [
@@ -26,7 +24,11 @@ router.post('/',
     postingsController.postPosting
 );
 
+//PATCH - add images to posting
+
 router.patch('/:postingId', isAuth , postingsController.patchImageToPosting);
+
+//PUT - update posting
 
 router.put('/:postingId', 
     isAuth, 
@@ -41,7 +43,7 @@ router.put('/:postingId',
     postingsController.updatePosting
 );
 
-
+//DELETE - delete posting
 
 router.delete('/:postingId', isAuth, postingsController.deletePosting);
 
